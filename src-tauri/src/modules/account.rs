@@ -1514,22 +1514,20 @@ pub fn update_account_quota(account_id: &str, quota: QuotaData) -> Result<(), St
                 for std_id in &config.quota_protection.monitored_models {
                     let max_pct = group_max_percentage.get(std_id).cloned().unwrap_or(100);
 
-                    if max_pct < threshold {
+                    if max_pct <= threshold {
                         if !account.protected_models.contains(std_id) {
                             crate::modules::logger::log_info(&format!(
-                                "[Quota] Triggering model protection: {} (Group: {} Max: {}% < Thres: {}%)",
+                                "[Quota] Triggering model protection: {} (Group: {} Max: {}% <= Thres: {}%)",
                                 account.email, std_id, max_pct, threshold
                             ));
                             account.protected_models.insert(std_id.clone());
                         }
-                    } else {
-                        if account.protected_models.contains(std_id) {
-                            crate::modules::logger::log_info(&format!(
-                                "[Quota] Model protection recovered: {} (Group: {} Max: {}% >= Thres: {}%)",
-                                account.email, std_id, max_pct, threshold
-                            ));
-                            account.protected_models.remove(std_id);
-                        }
+                    } else if account.protected_models.contains(std_id) {
+                        crate::modules::logger::log_info(&format!(
+                            "[Quota] Model protection recovered: {} (Group: {} Max: {}% > Thres: {}%)",
+                            account.email, std_id, max_pct, threshold
+                        ));
+                        account.protected_models.remove(std_id);
                     }
                 }
 

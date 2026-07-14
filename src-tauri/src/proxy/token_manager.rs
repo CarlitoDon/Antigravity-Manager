@@ -666,7 +666,7 @@ impl TokenManager {
             // 获取该组的最高百分比，如果账号没该组型号则视为 100%
             let max_pct = group_max_percentage.get(std_id).cloned().unwrap_or(100);
 
-            if max_pct < threshold {
+            if max_pct <= threshold {
                 // 只有组内所有模型都不行，才触发全组保护
                 if self
                     .trigger_quota_protection(
